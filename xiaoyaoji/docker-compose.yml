@@ -1,0 +1,36 @@
+version: '3.3'
+
+services:
+  mysql:
+    image: mysql:8.0.11
+    container_name: xiaoyaoji-mysql
+    restart: always
+    command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci --init-connect='SET NAMES utf8mb4;' --default-time-zone='+8:00' --log-timestamps=SYSTEM --sql_mode='STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' --default_authentication_plugin=mysql_native_password --performance_schema_max_table_instances=200 --table_definition_cache=100 --table_open_cache=100 --performance_schema=off --innodb_buffer_pool_size=8M --key_buffer_size=8M --tmp_table_size=8M --max_connections=50
+    environment:
+      - TZ=Asia/Shanghai
+      - MYSQL_ROOT_PASSWORD=root
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - ./data/mysql:/var/lib/mysql
+    ports:
+      - 23306:3306
+
+
+  xiaoyaoji:
+    image: registry.cn-hangzhou.aliyuncs.com/hegp/xiaoyaoji:2.1.7-20200913
+    container_name: xiaoyaoji
+    restart: always 
+    environment:
+      - TZ=Asia/Shanghai
+      - jdbc.url=jdbc:mysql://mysql:3306/xiaoyaoji?useUnicode=true&characterEncoding=utf8&useSSL=false
+      - jdbc.username=root
+      - jdbc.password=root
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - ./data/xiaoyaoji:/opt/xiaoyaoji/
+    links:
+      - mysql
+    ports:
+      - 9080:8080
+# docker run -itd --restart always --name xiaoyaoji -v /opt/xiaoyaoji:/opt/xiaoyaoji -e jdbc.url='jdbc:mysql://192.168.1.108:3306/xiaoyaoji?useUnicode=true&characterEncoding=utf8&useSSL=false' -e jdbc.username=root -e jdbc.password=root -p 8080:8080 registry.cn-hangzhou.aliyuncs.com/hegp/xiaoyaoji:2.1.7-20200913
+
